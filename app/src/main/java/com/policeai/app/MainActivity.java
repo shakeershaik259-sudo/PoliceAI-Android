@@ -8,8 +8,10 @@ import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.view.ViewGroup;
+
+import androidx.webkit.WebViewAssetLoader;
+import androidx.webkit.WebViewClientCompat;
 
 public class MainActivity extends Activity {
 
@@ -35,86 +37,131 @@ public class MainActivity extends Activity {
 
         WebSettings settings = webView.getSettings();
 
-        // JavaScript
         settings.setJavaScriptEnabled(true);
-
-        // Storage
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
 
-        // Mobile display
         settings.setLoadWithOverviewMode(false);
         settings.setUseWideViewPort(false);
 
-        // Disable zoom controls
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
 
-        // Allow audio/media
         settings.setMediaPlaybackRequiresUserGesture(false);
 
-        // Normal WebView client
-        webView.setWebViewClient(new WebViewClient());
+        /*
+         * Load local HTML through WebViewAssetLoader.
+         * This avoids the file:// origin problem.
+         */
+        final WebViewAssetLoader assetLoader =
+                new WebViewAssetLoader.Builder()
+                        .addPathHandler(
+                                "/assets/",
+                                new WebViewAssetLoader
+                                        .AssetsPathHandler(this)
+                        )
+                        .build();
 
-        // Handle microphone permission
-        webView.setWebChromeClient(new WebChromeClient() {
+        webView.setWebViewClient(
+                new WebViewClientCompat() {
 
-            @Override
-            public void onPermissionRequest(
-                    final PermissionRequest request) {
+                    @Override
+                    public android.webkit.WebResourceResponse
+                    shouldInterceptRequest(
+                            WebView view,
+                            android.webkit.WebResourceRequest request) {
 
-                runOnUiThread(() -> {
-
-                    if (request == null) {
-                        return;
+                        return assetLoader.shouldInterceptRequest(
+                                request.getUrl()
+                        );
                     }
 
-                    String[] resources = request.getResources();
+                    @Override
+                    public android.webkit.WebResourceResponse
+                    shouldInterceptRequest(
+                            WebView view,
+                            String url) {
 
-                    if (resources == null) {
-                        return;
+                        return assetLoader.shouldInterceptRequest(
+                                android.net.Uri.parse(url)
+                        );
                     }
+                }
+        );
 
-                    for (String resource : resources) {
+        /*
+         * Microphone permission
+         */
+        webView.setWebChromeClient(
+                new WebChromeClient() {
 
-                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE
-                                .equals(resource)) {
+                    @Override
+                    public void onPermissionRequest(
+                            final PermissionRequest request) {
 
-                            if (checkSelfPermission(
-                                    Manifest.permission.RECORD_AUDIO)
-                                    == PackageManager.PERMISSION_GRANTED) {
+                        runOnUiThread(() -> {
 
-                                request.grant(new String[]{
-                                        PermissionRequest
-                                                .RESOURCE_AUDIO_CAPTURE
-                                });
-
-                            } else {
-
-                                pendingPermissionRequest = request;
-
-                                requestPermissions(
-                                        new String[]{
-                                                Manifest.permission
-                                                        .RECORD_AUDIO
-                                        },
-                                        AUDIO_PERMISSION_REQUEST
-                                );
+                            if (request == null) {
+                                return;
                             }
 
-                            return;
-                        }
-                    }
-                });
-            }
-        });
+                            String[] resources =
+                                    request.getResources();
 
-        // Ask for microphone permission
+                            if (resources == null) {
+                                return;
+                            }
+
+                            for (String resource : resources) {
+
+                                if (PermissionRequest
+                                        .RESOURCE_AUDIO_CAPTURE
+                                        .equals(resource)) {
+
+                                    if (checkSelfPermission(
+                                            Manifest.permission
+                                                    .RECORD_AUDIO
+                                    ) ==
+                                            PackageManager
+                                                    .PERMISSION_GRANTED) {
+
+                                        request.grant(
+                                                new String[]{
+                                                        PermissionRequest
+                                                                .RESOURCE_AUDIO_CAPTURE
+                                                }
+                                        );
+
+                                    } else {
+
+                                        pendingPermissionRequest =
+                                                request;
+
+                                        requestPermissions(
+                                                new String[]{
+                                                        Manifest.permission
+                                                                .RECORD_AUDIO
+                                                },
+                                                AUDIO_PERMISSION_REQUEST
+                                        );
+                                    }
+
+                                    return;
+                                }
+                            }
+                        });
+                    }
+                }
+        );
+
         requestAudioPermission();
 
-        // Load the local Police AI interface
+        /*
+         * IMPORTANT:
+         * Load index.html using the HTTPS appassets origin.
+         */
         webView.loadUrl(
-                "file:///android_asset/index.html"
+                "https://appassets.androidplatform.net/assets/index.html"
         );
     }
 
@@ -123,8 +170,8 @@ public class MainActivity extends Activity {
         if (android.os.Build.VERSION.SDK_INT >= 23) {
 
             if (checkSelfPermission(
-                    Manifest.permission.RECORD_AUDIO)
-                    != PackageManager.PERMISSION_GRANTED) {
+                    Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED) {
 
                 requestPermissions(
                         new String[]{
@@ -192,13 +239,9 @@ public class MainActivity extends Activity {
         if (webView != null) {
 
             webView.stopLoading();
-
             webView.loadUrl("about:blank");
-
             webView.clearHistory();
-
             webView.removeAllViews();
-
             webView.destroy();
 
             webView = null;
