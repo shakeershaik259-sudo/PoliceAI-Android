@@ -3,1685 +3,2695 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+      content="width=device-width, initial-scale=1.0,
+               maximum-scale=1.0, user-scalable=no">
 
-<meta name="theme-color" content="#0b0f14">
+<meta name="theme-color" content="#061A3A">
 
 <title>Police AI</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+/* =========================================================
+   POLICE AI
+   STAGE 2 - BRANDED WELCOME + CHAT
+   ========================================================= */
+
 :root {
-    --bg:#0b0f14;
-    --panel:#111720;
-    --panel2:#171e29;
-    --border:#273241;
-    --text:#f4f7fb;
-    --muted:#8f9aaa;
-    --blue:#2563eb;
-    --blue2:#3b82f6;
-    --danger:#ef4444;
-    --user:#1d4ed8;
+  --bg: #f7f9fc;
+  --panel: #ffffff;
+  --panel2: #f1f5f9;
+  --text: #101828;
+  --muted: #667085;
+  --border: #e4e7ec;
+  --accent: #2563eb;
+  --accent2: #0ea5e9;
+  --user: #e8f0ff;
+  --assistant: #ffffff;
+  --danger: #dc2626;
+  --shadow: 0 8px 30px rgba(15, 23, 42, .08);
 }
 
-:root.light {
-    --bg:#f5f7fb;
-    --panel:#ffffff;
-    --panel2:#f1f4f8;
-    --border:#d9dee7;
-    --text:#111827;
-    --muted:#64748b;
-    --blue:#2563eb;
-    --blue2:#3b82f6;
-    --danger:#dc2626;
-    --user:#2563eb;
+[data-theme="dark"] {
+  --bg: #080c13;
+  --panel: #0f1722;
+  --panel2: #121c29;
+  --text: #f3f6fb;
+  --muted: #9aa8ba;
+  --border: #233044;
+  --accent: #3b82f6;
+  --accent2: #22d3ee;
+  --user: #12284b;
+  --assistant: #0f1722;
+  --danger: #ef4444;
+  --shadow: 0 12px 40px rgba(0,0,0,.35);
 }
 
 * {
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-html,body {
-    margin:0;
-    padding:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    font-family:
-        Inter,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-    background:var(--bg);
-    color:var(--text);
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 body {
-    display:flex;
-    flex-direction:column;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+
+  background: var(--bg);
+  color: var(--text);
 }
 
-/* HEADER */
+/* =========================================================
+   STAGE 2 WELCOME SCREEN
+   ========================================================= */
 
-.header {
-    height:58px;
-    flex-shrink:0;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 14px;
-    border-bottom:1px solid var(--border);
-    background:var(--panel);
+#welcomeScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  background: #061A3A;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  opacity: 1;
+  visibility: visible;
+
+  transition:
+    opacity .55s ease,
+    visibility .55s ease;
+}
+
+#welcomeScreen.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.welcome-image {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  opacity: .98;
+
+  animation: welcomeZoom 8s ease-in-out infinite alternate;
+}
+
+.welcome-overlay {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2, 10, 30, .05),
+      rgba(2, 10, 30, .15)
+    );
+
+  pointer-events: none;
+}
+
+.welcome-content {
+  position: relative;
+  z-index: 2;
+
+  width: min(88%, 430px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  margin-top: auto;
+  margin-bottom: 38px;
+
+  animation: welcomeContent .8s ease both;
+}
+
+.welcome-start {
+  border: 0;
+
+  min-width: 190px;
+  min-height: 48px;
+
+  padding: 12px 28px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #0ea5e9
+    );
+
+  color: white;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  letter-spacing: .2px;
+
+  box-shadow:
+    0 8px 28px rgba(37,99,235,.38);
+
+  cursor: pointer;
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+.welcome-start:active {
+  transform: scale(.96);
+}
+
+.welcome-start:hover {
+  box-shadow:
+    0 12px 34px rgba(37,99,235,.5);
+}
+
+.welcome-hint {
+  margin-top: 12px;
+
+  color: rgba(255,255,255,.75);
+
+  font-size: 11px;
+
+  text-align: center;
+}
+
+/* =========================================================
+   MAIN APPLICATION
+   ========================================================= */
+
+#app {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--bg);
+
+  opacity: 0;
+  transform: scale(.985);
+
+  transition:
+    opacity .45s ease,
+    transform .45s ease;
+}
+
+#app.ready {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+header {
+  height: 58px;
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 12px;
+
+  background: var(--panel);
+
+  border-bottom: 1px solid var(--border);
+
+  position: relative;
+  z-index: 20;
 }
 
 .brand {
-    display:flex;
-    align-items:center;
-    gap:9px;
-    min-width:0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-width: 0;
 }
 
 .logo {
-    width:34px;
-    height:34px;
-    flex-shrink:0;
-    animation:logoFloat 4s ease-in-out infinite;
+  width: 36px;
+  height: 36px;
+
+  flex: 0 0 36px;
+
+  animation: logoFloat 4s ease-in-out infinite;
 }
 
 .brand-text {
-    display:flex;
-    flex-direction:column;
-    line-height:1.05;
+  min-width: 0;
 }
 
 .brand-title {
-    font-size:16px;
-    font-weight:750;
-    letter-spacing:-.2px;
+  font-size: 15px;
+  font-weight: 800;
+
+  line-height: 18px;
+
+  white-space: nowrap;
 }
 
 .brand-subtitle {
-    margin-top:3px;
-    font-size:10px;
-    color:var(--muted);
+  font-size: 9px;
+  letter-spacing: 1.2px;
+
+  color: var(--muted);
+
+  font-weight: 700;
 }
 
 .header-actions {
-    display:flex;
-    align-items:center;
-    gap:5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .icon-btn {
-    width:37px;
-    height:37px;
-    border:0;
-    border-radius:11px;
-    background:transparent;
-    color:var(--text);
-    font-size:18px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
+  width: 38px;
+  height: 38px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 11px;
+
+  background: var(--panel2);
+
+  color: var(--text);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  transition:
+    transform .15s ease,
+    background .2s ease;
 }
 
 .icon-btn:active {
-    transform:scale(.92);
-    background:var(--panel2);
+  transform: scale(.92);
 }
 
-/* LAW BAR */
+/* =========================================================
+   LAW SELECTOR
+   ========================================================= */
 
-.lawbar {
-    height:45px;
-    flex-shrink:0;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:0 12px;
-    border-bottom:1px solid var(--border);
-    background:var(--panel);
+.law-bar {
+  height: 43px;
+  min-height: 43px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 12px;
+
+  background: var(--panel);
+
+  border-bottom: 1px solid var(--border);
 }
 
-.law-label {
-    color:var(--muted);
-    font-size:11px;
+.law-select {
+  width: auto;
+
+  min-width: 150px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 9px;
+
+  background: var(--panel2);
+
+  color: var(--text);
+
+  padding: 7px 10px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  outline: none;
 }
 
-select {
-    flex:1;
-    min-width:0;
-    max-width:150px;
-    height:31px;
-    padding:0 9px;
-    border:1px solid var(--border);
-    border-radius:9px;
-    background:var(--panel2);
-    color:var(--text);
-    font-size:12px;
-    outline:none;
-}
-
-/* CHAT */
+/* =========================================================
+   CHAT AREA
+   ========================================================= */
 
 #chat {
-    flex:1;
-    overflow-y:auto;
-    overflow-x:hidden;
-    padding:14px 12px 110px;
-    scroll-behavior:smooth;
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding:
+    12px
+    10px
+    8px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 9px;
+
+  scroll-behavior: smooth;
+
+  overscroll-behavior: contain;
 }
 
 #chat::-webkit-scrollbar {
-    width:4px;
+  width: 4px;
 }
 
 #chat::-webkit-scrollbar-thumb {
-    background:var(--border);
-    border-radius:10px;
+  background: var(--border);
+  border-radius: 10px;
 }
 
-.welcome {
-    max-width:600px;
-    margin:34px auto 20px;
-    text-align:center;
-    animation:fadeUp .5s ease;
+/* =========================================================
+   WELCOME MESSAGE
+   ========================================================= */
+
+.chat-welcome {
+  margin: 8px auto 3px;
+
+  width: min(94%, 520px);
+
+  text-align: center;
+
+  animation: fadeUp .45s ease both;
 }
 
-.welcome-logo {
-    width:70px;
-    height:70px;
-    margin:0 auto 13px;
-    animation:welcomePulse 3s ease-in-out infinite;
+.chat-welcome-icon {
+  width: 58px;
+  height: 58px;
+
+  margin: 3px auto 10px;
+
+  animation:
+    logoFloat 4s ease-in-out infinite,
+    softGlow 3s ease-in-out infinite alternate;
 }
 
-.welcome h1 {
-    margin:0;
-    font-size:23px;
-    letter-spacing:-.5px;
+.chat-welcome h1 {
+  margin: 0;
+
+  font-size: 22px;
+
+  letter-spacing: -.3px;
 }
 
-.welcome p {
-    margin:8px auto 0;
-    max-width:430px;
-    color:var(--muted);
-    font-size:12px;
-    line-height:1.5;
+.chat-welcome p {
+  margin: 5px 0 13px;
+
+  color: var(--muted);
+
+  font-size: 12px;
 }
 
-/* SUGGESTIONS */
+/* =========================================================
+   SUGGESTIONS
+   ========================================================= */
 
 .suggestions {
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:7px;
-    margin-top:18px;
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 6px;
 }
 
 .suggestion {
-    border:1px solid var(--border);
-    background:var(--panel);
-    color:var(--text);
-    border-radius:999px;
-    padding:7px 10px;
-    font-size:11px;
-    cursor:pointer;
+  border: 1px solid var(--border);
+
+  background: var(--panel);
+
+  color: var(--text);
+
+  border-radius: 16px;
+
+  padding: 7px 10px;
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  transition:
+    transform .15s ease,
+    border-color .2s ease,
+    background .2s ease;
 }
 
 .suggestion:active {
-    transform:scale(.96);
-    background:var(--panel2);
+  transform: scale(.96);
 }
 
-/* MESSAGE */
+.suggestion:hover {
+  border-color: var(--accent);
+}
+
+/* =========================================================
+   MESSAGE ROWS
+   ========================================================= */
 
 .message-row {
-    width:100%;
-    display:flex;
-    margin-bottom:8px;
-    animation:messageIn .25s ease;
+  display: flex;
+
+  width: 100%;
+
+  margin: 0;
+
+  animation: messageIn .25s ease both;
 }
 
 .message-row.user {
-    justify-content:flex-end;
+  justify-content: flex-end;
 }
 
-.message-row.ai {
-    justify-content:flex-start;
+.message-row.assistant {
+  justify-content: flex-start;
 }
 
 .message {
-    width:fit-content;
-    max-width:min(88%,720px);
-    padding:8px 11px;
-    border-radius:14px;
-    font-size:13px;
-    line-height:1.48;
-    white-space:pre-wrap;
-    overflow-wrap:anywhere;
+  width: fit-content;
+
+  max-width: min(88%, 720px);
+
+  border-radius: 14px;
+
+  padding: 8px 10px;
+
+  line-height: 1.48;
+
+  font-size: 13px;
+
+  white-space: pre-wrap;
+
+  word-break: break-word;
+
+  border: 1px solid var(--border);
+
+  box-shadow: 0 2px 8px rgba(0,0,0,.025);
 }
 
 .message.user {
-    background:var(--user);
-    color:white;
-    border-bottom-right-radius:5px;
+  background: var(--user);
+
+  border-color: rgba(37,99,235,.16);
 }
 
-.message.ai {
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-bottom-left-radius:5px;
+.message.assistant {
+  background: var(--assistant);
 }
 
 .message strong {
-    font-weight:750;
+  font-weight: 750;
+}
+
+.message em {
+  opacity: .9;
 }
 
 .message-actions {
-    display:flex;
-    gap:5px;
-    margin-top:7px;
+  display: flex;
+
+  gap: 5px;
+
+  margin-top: 7px;
 }
 
-.small-action {
-    border:1px solid var(--border);
-    background:var(--panel2);
-    color:var(--muted);
-    border-radius:7px;
-    padding:4px 7px;
-    font-size:10px;
-    cursor:pointer;
+.small-btn {
+  border: 1px solid var(--border);
+
+  background: var(--panel2);
+
+  color: var(--muted);
+
+  border-radius: 8px;
+
+  padding: 5px 8px;
+
+  font-size: 10px;
+
+  cursor: pointer;
 }
 
-.small-action:active {
-    transform:scale(.95);
+.small-btn:active {
+  transform: scale(.95);
 }
 
-/* SOURCE */
+/* =========================================================
+   SOURCE CARD
+   ========================================================= */
 
 .source-card {
-    margin-top:8px;
-    padding:7px 9px;
-    border:1px solid var(--border);
-    border-radius:10px;
-    background:var(--panel2);
-    animation:sourceIn .3s ease;
+  margin-top: 8px;
+
+  border: 1px solid var(--border);
+
+  background: var(--panel2);
+
+  border-radius: 10px;
+
+  padding: 7px 9px;
+
+  font-size: 10px;
+
+  animation: sourceIn .3s ease both;
 }
 
 .source-title {
-    font-size:10px;
-    font-weight:700;
-    color:var(--muted);
-    margin-bottom:3px;
+  font-size: 10px;
+
+  font-weight: 800;
+
+  margin-bottom: 3px;
+
+  color: var(--text);
 }
 
 .source-item {
-    display:flex;
-    align-items:flex-start;
-    gap:7px;
-    padding:3px 0;
-    margin:0;
-    font-size:10px;
-    line-height:1.3;
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 7px;
+
+  padding: 3px 0;
+
+  margin: 0;
+
+  color: var(--muted);
+
+  line-height: 1.25;
 }
 
-.source-key {
-    min-width:48px;
-    color:var(--muted);
+.source-label {
+  color: var(--text);
+
+  font-weight: 700;
+
+  flex: 0 0 auto;
 }
 
-.source-value {
-    color:var(--text);
-    word-break:break-word;
-}
-
-/* TYPING */
+/* =========================================================
+   TYPING
+   ========================================================= */
 
 .typing {
-    display:flex;
-    align-items:center;
-    gap:4px;
-    padding:10px 12px;
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  padding: 4px 2px;
 }
 
 .dot {
-    width:5px;
-    height:5px;
-    border-radius:50%;
-    background:var(--muted);
-    animation:typing 1s infinite;
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: var(--accent);
+
+  animation: typingDot 1.1s infinite ease-in-out;
 }
 
 .dot:nth-child(2) {
-    animation-delay:.15s;
+  animation-delay: .15s;
 }
 
 .dot:nth-child(3) {
-    animation-delay:.3s;
+  animation-delay: .3s;
 }
 
-/* COMPOSER */
+/* =========================================================
+   COMPOSER
+   ========================================================= */
 
 .composer-wrap {
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
-    padding:8px 10px 10px;
-    background:linear-gradient(
-        to top,
-        var(--bg) 72%,
-        transparent
+  padding:
+    7px
+    9px
+    max(
+      8px,
+      env(safe-area-inset-bottom)
     );
-    pointer-events:none;
+
+  background: var(--bg);
+
+  border-top: 1px solid var(--border);
 }
 
 .composer {
-    pointer-events:auto;
-    max-width:760px;
-    margin:auto;
-    display:flex;
-    align-items:flex-end;
-    gap:6px;
-    padding:6px;
-    border:1px solid var(--border);
-    border-radius:15px;
-    background:var(--panel);
-    box-shadow:0 8px 30px rgba(0,0,0,.18);
+  width: 100%;
+
+  display: flex;
+  align-items: flex-end;
+
+  gap: 6px;
+
+  padding: 5px;
+
+  background: var(--panel);
+
+  border: 1px solid var(--border);
+
+  border-radius: 15px;
+
+  box-shadow: var(--shadow);
 }
 
-textarea {
-    flex:1;
-    min-width:0;
-    height:38px;
-    max-height:96px;
-    resize:none;
-    border:0;
-    outline:none;
-    background:transparent;
-    color:var(--text);
-    padding:9px 7px;
-    font-family:inherit;
-    font-size:13px;
-    line-height:20px;
+#question {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 38px;
+
+  max-height: 100px;
+
+  resize: none;
+
+  overflow-y: auto;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: var(--text);
+
+  padding: 9px 7px;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  line-height: 20px;
 }
 
-textarea::placeholder {
-    color:var(--muted);
+#question::placeholder {
+  color: var(--muted);
 }
 
-.composer-btn {
-    width:36px;
-    height:36px;
-    flex-shrink:0;
-    border:0;
-    border-radius:10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--panel2);
-    color:var(--text);
-    font-size:17px;
-    cursor:pointer;
-}
+.send-btn,
+.mic-btn {
+  width: 36px;
+  height: 36px;
 
-.composer-btn:active {
-    transform:scale(.9);
+  flex: 0 0 36px;
+
+  border: 0;
+
+  border-radius: 11px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  font-size: 16px;
 }
 
 .send-btn {
-    background:var(--blue);
-    color:white;
+  background: var(--accent);
+
+  color: white;
 }
 
-/* LISTENING OVERLAY */
+.mic-btn {
+  background: var(--panel2);
 
-.voice-overlay {
-    position:fixed;
-    inset:0;
-    z-index:100;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    background:rgba(4,8,13,.94);
-    backdrop-filter:blur(12px);
+  color: var(--text);
+
+  border: 1px solid var(--border);
 }
 
-.voice-overlay.show {
-    display:flex;
-    animation:fadeIn .2s ease;
+.mic-btn.recording {
+  background: #dc2626;
+
+  color: white;
+
+  animation: micPulse 1s infinite;
+}
+
+.footer-note {
+  text-align: center;
+
+  color: var(--muted);
+
+  font-size: 8px;
+
+  margin-top: 5px;
+
+  opacity: .8;
+}
+
+/* =========================================================
+   VOICE LISTENING OVERLAY
+   ========================================================= */
+
+#voiceOverlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 10000;
+
+  display: none;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(20, 74, 150, .75),
+      rgba(3, 8, 20, .97)
+    );
+
+  backdrop-filter: blur(12px);
+}
+
+#voiceOverlay.active {
+  display: flex;
 }
 
 .voice-orb {
-    position:relative;
-    width:116px;
-    height:116px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:linear-gradient(
-        145deg,
-        #2563eb,
-        #1d4ed8
+  width: 130px;
+  height: 130px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 52px;
+
+  background:
+    radial-gradient(
+      circle,
+      #38bdf8 0%,
+      #2563eb 45%,
+      #172554 72%
     );
-    box-shadow:
-        0 0 0 0 rgba(37,99,235,.45),
-        0 0 45px rgba(37,99,235,.45);
-    animation:orbPulse 1.5s infinite;
-}
 
-.voice-orb::before,
-.voice-orb::after {
-    content:"";
-    position:absolute;
-    inset:-13px;
-    border:2px solid rgba(59,130,246,.25);
-    border-radius:50%;
-    animation:voiceRing 1.8s infinite;
-}
+  box-shadow:
+    0 0 0 12px rgba(37,99,235,.12),
+    0 0 0 28px rgba(37,99,235,.06),
+    0 0 55px rgba(14,165,233,.55);
 
-.voice-orb::after {
-    inset:-27px;
-    animation-delay:.35s;
-}
-
-.mic-large {
-    font-size:48px;
+  animation:
+    voiceOrb 1.35s infinite ease-in-out;
 }
 
 .voice-title {
-    margin-top:30px;
-    font-size:22px;
-    font-weight:750;
+  margin-top: 24px;
+
+  color: white;
+
+  font-size: 22px;
+
+  font-weight: 800;
 }
 
 .voice-status {
-    margin-top:7px;
-    color:#aeb8c8;
-    font-size:12px;
+  margin-top: 6px;
+
+  color: rgba(255,255,255,.72);
+
+  font-size: 13px;
+}
+
+.voice-waves {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 4px;
+
+  height: 45px;
+
+  margin-top: 18px;
 }
 
 .wave {
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:5px;
-    height:38px;
-    margin-top:17px;
+  width: 4px;
+
+  height: 12px;
+
+  border-radius: 10px;
+
+  background: #38bdf8;
+
+  animation: wave 1s infinite ease-in-out;
 }
 
-.wave span {
-    width:4px;
-    height:10px;
-    border-radius:5px;
-    background:#60a5fa;
-    animation:wave 1s infinite ease-in-out;
-}
-
-.wave span:nth-child(2){animation-delay:.1s}
-.wave span:nth-child(3){animation-delay:.2s}
-.wave span:nth-child(4){animation-delay:.3s}
-.wave span:nth-child(5){animation-delay:.4s}
-.wave span:nth-child(6){animation-delay:.3s}
-.wave span:nth-child(7){animation-delay:.2s}
+.wave:nth-child(2) { animation-delay: .1s; }
+.wave:nth-child(3) { animation-delay: .2s; }
+.wave:nth-child(4) { animation-delay: .3s; }
+.wave:nth-child(5) { animation-delay: .4s; }
 
 .stop-recording {
-    margin-top:28px;
-    border:1px solid rgba(255,255,255,.15);
-    background:#161d27;
-    color:white;
-    border-radius:999px;
-    padding:10px 18px;
-    font-size:12px;
+  margin-top: 28px;
+
+  border: 1px solid rgba(255,255,255,.2);
+
+  background: rgba(255,255,255,.08);
+
+  color: white;
+
+  border-radius: 24px;
+
+  padding: 10px 22px;
+
+  font-size: 12px;
+
+  cursor: pointer;
 }
 
-/* ANIMATIONS */
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
 
-@keyframes fadeIn {
-    from {opacity:0}
-    to {opacity:1}
+@keyframes welcomeZoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.045);
+  }
 }
 
-@keyframes fadeUp {
-    from {
-        opacity:0;
-        transform:translateY(12px);
-    }
-    to {
-        opacity:1;
-        transform:translateY(0);
-    }
-}
-
-@keyframes messageIn {
-    from {
-        opacity:0;
-        transform:translateY(5px) scale(.99);
-    }
-    to {
-        opacity:1;
-        transform:translateY(0) scale(1);
-    }
-}
-
-@keyframes sourceIn {
-    from {
-        opacity:0;
-        transform:translateY(4px);
-    }
-    to {
-        opacity:1;
-        transform:translateY(0);
-    }
+@keyframes welcomeContent {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes logoFloat {
-    0%,100% {transform:translateY(0)}
-    50% {transform:translateY(-2px)}
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
 }
 
-@keyframes welcomePulse {
-    0%,100% {
-        transform:scale(1);
-        filter:drop-shadow(0 0 0 rgba(37,99,235,0));
-    }
-    50% {
-        transform:scale(1.04);
-        filter:drop-shadow(0 0 12px rgba(37,99,235,.3));
-    }
+@keyframes softGlow {
+  from {
+    filter: drop-shadow(0 0 2px rgba(37,99,235,.15));
+  }
+
+  to {
+    filter: drop-shadow(0 0 9px rgba(37,99,235,.45));
+  }
 }
 
-@keyframes typing {
-    0%,60%,100% {
-        transform:translateY(0);
-        opacity:.45;
-    }
-    30% {
-        transform:translateY(-4px);
-        opacity:1;
-    }
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@keyframes orbPulse {
-    0%,100% {
-        box-shadow:
-            0 0 0 0 rgba(37,99,235,.45),
-            0 0 45px rgba(37,99,235,.45);
-    }
-    50% {
-        box-shadow:
-            0 0 0 18px rgba(37,99,235,.08),
-            0 0 65px rgba(37,99,235,.6);
-    }
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-@keyframes voiceRing {
-    0% {
-        transform:scale(.85);
-        opacity:.8;
-    }
-    100% {
-        transform:scale(1.35);
-        opacity:0;
-    }
+@keyframes sourceIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: .45;
+  }
+
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@keyframes micPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220,38,38,.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(220,38,38,.08);
+  }
+}
+
+@keyframes voiceOrb {
+  0%, 100% {
+    transform: scale(.96);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 @keyframes wave {
-    0%,100% {
-        height:8px;
-        opacity:.5;
-    }
-    50% {
-        height:30px;
-        opacity:1;
-    }
+  0%, 100% {
+    height: 10px;
+    opacity: .5;
+  }
+
+  50% {
+    height: 38px;
+    opacity: 1;
+  }
 }
 
-@media (prefers-reduced-motion:reduce) {
-    *,
-    *::before,
-    *::after {
-        animation:none !important;
-        scroll-behavior:auto !important;
-    }
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+  .brand-title {
+    font-size: 14px;
+  }
+
+  .brand-subtitle {
+    font-size: 8px;
+  }
+
+  .message {
+    font-size: 12px;
+  }
+
+  .chat-welcome h1 {
+    font-size: 20px;
+  }
+
+  .welcome-content {
+    margin-bottom: 25px;
+  }
+
+  .welcome-start {
+    min-width: 175px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<header class="header">
+<!-- =======================================================
+     STAGE 2 WELCOME SCREEN
+     ======================================================= -->
+
+<div id="welcomeScreen">
+
+  <img
+    class="welcome-image"
+    src="welcome_screen.png"
+    alt="Police AI Law Assistant"
+  >
+
+  <div class="welcome-overlay"></div>
+
+  <div class="welcome-content">
+
+    <button
+      id="startAppBtn"
+      class="welcome-start"
+      type="button"
+    >
+      Get Started
+    </button>
+
+    <div class="welcome-hint">
+      AI-powered assistance for your legal knowledge
+    </div>
+
+  </div>
+</div>
+
+
+<!-- =======================================================
+     MAIN APP
+     ======================================================= -->
+
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
 
     <div class="brand">
 
-        <svg class="logo"
-             viewBox="0 0 100 100"
-             xmlns="http://www.w3.org/2000/svg">
+      <!-- Police shield logo -->
+      <svg
+        class="logo"
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <linearGradient
+            id="shieldGradient"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stop-color="#2563EB"
+            />
+            <stop
+              offset="100%"
+              stop-color="#0EA5E9"
+            />
+          </linearGradient>
+        </defs>
 
-            <path
-                d="M50 6
-                   L88 20
-                   V47
-                   C88 70 73 87 50 95
-                   C27 87 12 70 12 47
-                   V20Z"
-                fill="#2563eb"/>
+        <path
+          d="M50 6
+             L88 20
+             L82 57
+             C78 77 65 90 50 95
+             C35 90 22 77 18 57
+             L12 20 Z"
+          fill="url(#shieldGradient)"
+          stroke="#F5C542"
+          stroke-width="4"
+        />
 
-            <path
-                d="M50 15
-                   L79 26
-                   V47
-                   C79 65 67 78 50 85
-                   C33 78 21 65 21 47
-                   V26Z"
-                fill="#0b0f14"/>
+        <path
+          d="M31 43
+             Q50 29 69 43
+             L65 49
+             Q50 40 35 49 Z"
+          fill="#ffffff"
+        />
 
-            <circle
-                cx="50"
-                cy="45"
-                r="17"
-                fill="#2563eb"/>
+        <circle
+          cx="50"
+          cy="54"
+          r="5"
+          fill="#F5C542"
+        />
 
-            <path
-                d="M50 31
-                   L53 40
-                   L63 40
-                   L55 46
-                   L58 56
-                   L50 50
-                   L42 56
-                   L45 46
-                   L37 40
-                   L47 40Z"
-                fill="white"/>
+        <path
+          d="M50 59 L50 76"
+          stroke="#ffffff"
+          stroke-width="4"
+          stroke-linecap="round"
+        />
 
-        </svg>
+        <path
+          d="M37 76 L63 76"
+          stroke="#ffffff"
+          stroke-width="4"
+          stroke-linecap="round"
+        />
 
-        <div class="brand-text">
-            <div class="brand-title">Police AI</div>
-            <div class="brand-subtitle">Police Law Assistant</div>
+        <path
+          d="M42 65 L34 74
+             M58 65 L66 74"
+          stroke="#22D3EE"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+
+      </svg>
+
+      <div class="brand-text">
+        <div class="brand-title">
+          Police AI
         </div>
+
+        <div class="brand-subtitle">
+          LAW ASSISTANT
+        </div>
+      </div>
 
     </div>
 
     <div class="header-actions">
 
-        <button
-            class="icon-btn"
-            id="themeBtn"
-            aria-label="Change theme">
-            ☀️
-        </button>
+      <button
+        id="themeBtn"
+        class="icon-btn"
+        type="button"
+        title="Change theme"
+      >
+        🌙
+      </button>
 
-        <button
-            class="icon-btn"
-            id="newChatBtn"
-            aria-label="New chat">
-            ＋
-        </button>
+      <button
+        id="newChatBtn"
+        class="icon-btn"
+        type="button"
+        title="New chat"
+      >
+        ＋
+      </button>
 
     </div>
 
-</header>
+  </header>
 
 
-<div class="lawbar">
+  <!-- LAW SELECTOR -->
+  <div class="law-bar">
 
-    <span class="law-label">Law</span>
+    <select
+      id="lawSelect"
+      class="law-select"
+    >
+      <option value="BNS">
+        BNS — Bharatiya Nyaya Sanhita
+      </option>
 
-    <select id="lawSelect">
+      <option value="BNSS">
+        BNSS — Bharatiya Nagarik Suraksha Sanhita
+      </option>
 
-        <option value="BNS">
-            BNS — Bharatiya Nyaya Sanhita
-        </option>
-
-        <option value="BNSS">
-            BNSS — Bharatiya Nagarik Suraksha Sanhita
-        </option>
-
-        <option value="BSA">
-            BSA — Bharatiya Sakshya Adhiniyam
-        </option>
-
+      <option value="BSA">
+        BSA — Bharatiya Sakshya Adhiniyam
+      </option>
     </select>
 
-</div>
+  </div>
 
 
-<main id="chat">
+  <!-- CHAT -->
+  <main id="chat">
 
-    <section class="welcome" id="welcome">
+    <div
+      id="welcomeMessage"
+      class="chat-welcome"
+    >
 
-        <svg class="welcome-logo"
-             viewBox="0 0 100 100"
-             xmlns="http://www.w3.org/2000/svg">
+      <svg
+        class="chat-welcome-icon"
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M50 6
+             L88 20
+             L82 57
+             C78 77 65 90 50 95
+             C35 90 22 77 18 57
+             L12 20 Z"
+          fill="#2563EB"
+          stroke="#F5C542"
+          stroke-width="4"
+        />
 
-            <path
-                d="M50 5L90 20V48C90 72 74 88 50 96C26 88 10 72 10 48V20Z"
-                fill="#2563eb"/>
+        <circle
+          cx="50"
+          cy="48"
+          r="15"
+          fill="#ffffff"
+        />
 
-            <path
-                d="M50 15L80 26V47C80 65 68 78 50 86C32 78 20 65 20 47V26Z"
-                fill="#0b0f14"/>
+        <path
+          d="M50 37 L50 59
+             M39 48 L61 48"
+          stroke="#2563EB"
+          stroke-width="4"
+          stroke-linecap="round"
+        />
 
-            <circle
-                cx="50"
-                cy="45"
-                r="17"
-                fill="#2563eb"/>
+        <path
+          d="M40 69 L50 60 L60 69"
+          stroke="#22D3EE"
+          stroke-width="4"
+          fill="none"
+        />
+      </svg>
 
-            <path
-                d="M50 31L53 40H63L55 46L58 56L50 50L42 56L45 46L37 40H47Z"
-                fill="white"/>
+      <h1>
+        How can I help you?
+      </h1>
 
-        </svg>
+      <p>
+        Ask a question about Indian criminal law.
+      </p>
 
-        <h1>How can I help?</h1>
+      <div class="suggestions">
 
-        <p>
-            Ask Police AI about BNS provisions and retrieve
-            information from your Police AI Knowledge Base.
-        </p>
+        <button
+          class="suggestion"
+          type="button"
+          data-question="What is culpable homicide?"
+        >
+          What is culpable homicide?
+        </button>
 
-        <div class="suggestions">
+        <button
+          class="suggestion"
+          type="button"
+          data-question="What is theft?"
+        >
+          What is theft?
+        </button>
 
-            <button class="suggestion">
-                What is culpable homicide?
-            </button>
+        <button
+          class="suggestion"
+          type="button"
+          data-question="What is criminal intimidation?"
+        >
+          Criminal intimidation
+        </button>
 
-            <button class="suggestion">
-                Explain Section 100 BNS
-            </button>
+        <button
+          class="suggestion"
+          type="button"
+          data-question="What is the punishment for murder?"
+        >
+          Punishment for murder
+        </button>
 
-            <button class="suggestion">
-                What is theft?
-            </button>
+      </div>
 
-            <button class="suggestion">
-                What is criminal intimidation?
-            </button>
+    </div>
 
-        </div>
-
-    </section>
-
-</main>
+  </main>
 
 
-<div class="composer-wrap">
+  <!-- COMPOSER -->
+  <div class="composer-wrap">
 
     <div class="composer">
 
-        <textarea
-            id="question"
-            placeholder="Ask Police AI..."
-            rows="1"></textarea>
+      <textarea
+        id="question"
+        rows="1"
+        placeholder="Ask Police AI..."
+        autocomplete="off"
+        spellcheck="true"
+      ></textarea>
 
-        <button
-            class="composer-btn"
-            id="micBtn"
-            aria-label="Voice input">
-            🎙️
-        </button>
+      <button
+        id="micBtn"
+        class="mic-btn"
+        type="button"
+        title="Voice input"
+      >
+        🎙️
+      </button>
 
-        <button
-            class="composer-btn send-btn"
-            id="sendBtn"
-            aria-label="Send">
-            ➤
-        </button>
+      <button
+        id="sendBtn"
+        class="send-btn"
+        type="button"
+        title="Send"
+      >
+        ➤
+      </button>
 
     </div>
+
+    <div class="footer-note">
+      Police AI • Law Assistant
+    </div>
+
+  </div>
 
 </div>
 
 
-<!-- VOICE OVERLAY -->
+<!-- =======================================================
+     VOICE OVERLAY
+     ======================================================= -->
 
-<div class="voice-overlay" id="voiceOverlay">
+<div id="voiceOverlay">
 
-    <div class="voice-orb">
+  <div class="voice-orb">
+    🎙️
+  </div>
 
-        <div class="mic-large">🎙️</div>
+  <div class="voice-title">
+    Listening…
+  </div>
 
-    </div>
+  <div
+    id="voiceStatus"
+    class="voice-status"
+  >
+    I'm listening
+  </div>
 
-    <div class="voice-title">
-        Listening…
-    </div>
+  <div class="voice-waves">
 
-    <div class="voice-status" id="voiceStatus">
-        I'm listening
-    </div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
 
-    <div class="wave">
+  </div>
 
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-
-    </div>
-
-    <button
-        class="stop-recording"
-        id="stopVoiceBtn">
-        Stop Recording
-    </button>
+  <button
+    id="stopVoiceBtn"
+    class="stop-recording"
+    type="button"
+  >
+    Stop Recording
+  </button>
 
 </div>
 
 
 <script>
+/* =========================================================
+   POLICE AI JAVASCRIPT
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   SUPABASE
+   --------------------------------------------------------- */
 
 const SUPABASE_URL =
-    "https://vudomrvucmpsizzmgugi.supabase.co";
+  "https://vudomrvucmpsizzmgugi.supabase.co";
 
-const SUPABASE_KEY =
-    "sb_publishable_3K6ZJ5y2Z9M9HYKmpiMyOg_86Rb0TYi";
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_3K6ZJ5y2Z9M9HYKmpiMyOg_86Rb0TYi";
+
+const CHAT_FUNCTION_NAME = "Chat";
 
 const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
 
+
+/* ---------------------------------------------------------
+   ELEMENTS
+   --------------------------------------------------------- */
+
+const welcomeScreen =
+  document.getElementById("welcomeScreen");
+
+const startAppBtn =
+  document.getElementById("startAppBtn");
+
+const app =
+  document.getElementById("app");
 
 const chat =
-    document.getElementById("chat");
+  document.getElementById("chat");
 
-const welcome =
-    document.getElementById("welcome");
-
-const questionInput =
-    document.getElementById("question");
+const question =
+  document.getElementById("question");
 
 const sendBtn =
-    document.getElementById("sendBtn");
+  document.getElementById("sendBtn");
 
 const micBtn =
-    document.getElementById("micBtn");
+  document.getElementById("micBtn");
 
 const themeBtn =
-    document.getElementById("themeBtn");
+  document.getElementById("themeBtn");
 
 const newChatBtn =
-    document.getElementById("newChatBtn");
+  document.getElementById("newChatBtn");
 
 const lawSelect =
-    document.getElementById("lawSelect");
+  document.getElementById("lawSelect");
 
 const voiceOverlay =
-    document.getElementById("voiceOverlay");
-
-const voiceStatus =
-    document.getElementById("voiceStatus");
+  document.getElementById("voiceOverlay");
 
 const stopVoiceBtn =
-    document.getElementById("stopVoiceBtn");
+  document.getElementById("stopVoiceBtn");
+
+const voiceStatus =
+  document.getElementById("voiceStatus");
 
 
-let recognition = null;
-let isListening = false;
-let currentSpeech = null;
+/* ---------------------------------------------------------
+   APP START
+   --------------------------------------------------------- */
+
+function showMainApp() {
+
+  welcomeScreen.classList.add("hide");
+
+  setTimeout(() => {
+    app.classList.add("ready");
+    question.focus();
+  }, 120);
+
+}
 
 
-/* THEME */
+/* ---------------------------------------------------------
+   WELCOME SCREEN
+   --------------------------------------------------------- */
+
+startAppBtn.addEventListener(
+  "click",
+  showMainApp
+);
+
+
+/* ---------------------------------------------------------
+   THEME
+   --------------------------------------------------------- */
+
+function applyTheme(theme) {
+
+  document.documentElement.setAttribute(
+    "data-theme",
+    theme
+  );
+
+  localStorage.setItem(
+    "police_ai_theme",
+    theme
+  );
+
+  themeBtn.textContent =
+    theme === "dark" ? "☀️" : "🌙";
+}
+
 
 const savedTheme =
-    localStorage.getItem("policeai-theme");
+  localStorage.getItem("police_ai_theme");
 
-if (savedTheme === "light") {
-    document.documentElement.classList.add("light");
-    themeBtn.textContent = "🌙";
+
+if (savedTheme) {
+
+  applyTheme(savedTheme);
+
+} else {
+
+  const prefersDark =
+    window.matchMedia &&
+    window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+
+  applyTheme(
+    prefersDark ? "dark" : "light"
+  );
+
 }
 
 
-themeBtn.addEventListener("click", () => {
+themeBtn.addEventListener(
+  "click",
+  () => {
 
-    const light =
-        document.documentElement.classList.toggle("light");
+    const current =
+      document.documentElement
+        .getAttribute("data-theme");
 
-    themeBtn.textContent =
-        light ? "🌙" : "☀️";
-
-    localStorage.setItem(
-        "policeai-theme",
-        light ? "light" : "dark"
+    applyTheme(
+      current === "dark"
+        ? "light"
+        : "dark"
     );
 
-});
+  }
+);
 
 
-/* TEXTAREA SIZE */
+/* ---------------------------------------------------------
+   LAW
+   --------------------------------------------------------- */
 
-questionInput.addEventListener("input", () => {
+let selectedLaw =
+  lawSelect.value;
 
-    questionInput.style.height = "38px";
+lawSelect.addEventListener(
+  "change",
+  () => {
 
-    const height =
-        Math.min(
-            questionInput.scrollHeight,
-            96
-        );
+    selectedLaw =
+      lawSelect.value;
 
-    questionInput.style.height =
-        height + "px";
-
-});
-
-
-/* ADD MESSAGE */
-
-function addMessage(
-    text,
-    type,
-    showActions = false
-) {
-
-    const row =
-        document.createElement("div");
-
-    row.className =
-        "message-row " + type;
-
-    const box =
-        document.createElement("div");
-
-    box.className =
-        "message " + type;
-
-    box.textContent = text;
-
-    row.appendChild(box);
-
-    chat.appendChild(row);
-
-    if (showActions && type === "ai") {
-
-        const actions =
-            document.createElement("div");
-
-        actions.className =
-            "message-actions";
-
-        const copy =
-            document.createElement("button");
-
-        copy.className =
-            "small-action";
-
-        copy.textContent =
-            "Copy";
-
-        copy.onclick = async () => {
-
-            try {
-
-                await navigator.clipboard.writeText(text);
-
-                copy.textContent =
-                    "Copied";
-
-                setTimeout(() => {
-                    copy.textContent = "Copy";
-                }, 1200);
-
-            } catch {
-
-                copy.textContent =
-                    "Copy failed";
-            }
-
-        };
+  }
+);
 
 
-        const read =
-            document.createElement("button");
+/* ---------------------------------------------------------
+   TEXTAREA AUTO RESIZE
+   --------------------------------------------------------- */
 
-        read.className =
-            "small-action";
+function resizeTextarea() {
 
-        read.textContent =
-            "🔊 Read";
+  question.style.height = "38px";
 
-        read.onclick = () => {
+  const newHeight =
+    Math.min(
+      question.scrollHeight,
+      100
+    );
 
-            stopSpeech();
-
-            currentSpeech =
-                new SpeechSynthesisUtterance(text);
-
-            currentSpeech.lang =
-                "en-IN";
-
-            currentSpeech.rate =
-                0.95;
-
-            speechSynthesis.speak(
-                currentSpeech
-            );
-
-            read.textContent =
-                "⏹ Stop";
-
-            currentSpeech.onend = () => {
-                read.textContent = "🔊 Read";
-            };
-
-        };
-
-
-        actions.appendChild(copy);
-        actions.appendChild(read);
-        box.appendChild(actions);
-
-    }
-
-    chat.scrollTop =
-        chat.scrollHeight;
-
-    return box;
+  question.style.height =
+    newHeight + "px";
 }
 
 
-/* SOURCE CARD */
-
-function addSourceCard(
-    container,
-    answer
-) {
-
-    const sourceMatch =
-        answer.match(
-            /📖\s*Source:\s*(.+)/i
-        );
-
-    const sectionMatch =
-        answer.match(
-            /📑\s*Section:\s*(.+)/i
-        );
-
-    const pageMatch =
-        answer.match(
-            /📄\s*Page:\s*(.+)/i
-        );
-
-    if (!sourceMatch &&
-        !sectionMatch &&
-        !pageMatch) {
-        return;
-    }
+question.addEventListener(
+  "input",
+  resizeTextarea
+);
 
 
-    const card =
-        document.createElement("div");
+/* ---------------------------------------------------------
+   ENTER TO SEND
+   --------------------------------------------------------- */
 
-    card.className =
-        "source-card";
+question.addEventListener(
+  "keydown",
+  (event) => {
 
-
-    const title =
-        document.createElement("div");
-
-    title.className =
-        "source-title";
-
-    title.textContent =
-        "SOURCE REFERENCE";
-
-    card.appendChild(title);
-
-
-    function addItem(
-        key,
-        value
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
     ) {
 
-        if (!value) return;
+      event.preventDefault();
 
-        const item =
-            document.createElement("div");
+      askPoliceAI();
 
-        item.className =
-            "source-item";
-
-        const k =
-            document.createElement("div");
-
-        k.className =
-            "source-key";
-
-        k.textContent =
-            key;
-
-        const v =
-            document.createElement("div");
-
-        v.className =
-            "source-value";
-
-        v.textContent =
-            value.trim();
-
-        item.appendChild(k);
-        item.appendChild(v);
-
-        card.appendChild(item);
     }
 
-
-    addItem(
-        "Source",
-        sourceMatch?.[1]
-    );
-
-    addItem(
-        "Section",
-        sectionMatch?.[1]
-    );
-
-    addItem(
-        "Page",
-        pageMatch?.[1]
-    );
+  }
+);
 
 
-    container.appendChild(card);
+/* ---------------------------------------------------------
+   MARKDOWN-LIKE TEXT
+   --------------------------------------------------------- */
+
+function escapeHtml(text) {
+
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
 }
 
 
-/* TYPING */
+function formatAnswer(text) {
 
-function showTyping() {
+  let safe =
+    escapeHtml(text);
 
-    const row =
-        document.createElement("div");
+  safe =
+    safe.replace(
+      /\*\*(.*?)\*\*/g,
+      "<strong>$1</strong>"
+    );
 
-    row.className =
-        "message-row ai";
+  safe =
+    safe.replace(
+      /\n/g,
+      "<br>"
+    );
 
-    row.id =
-        "typingRow";
+  return safe;
+}
 
-    const box =
-        document.createElement("div");
 
-    box.className =
-        "message ai typing";
+/* ---------------------------------------------------------
+   ADD MESSAGE
+   --------------------------------------------------------- */
 
-    box.innerHTML =
-        "<span class='dot'></span>" +
-        "<span class='dot'></span>" +
-        "<span class='dot'></span>";
+function addMessage(
+  text,
+  type = "assistant"
+) {
 
-    row.appendChild(box);
+  const row =
+    document.createElement("div");
 
-    chat.appendChild(row);
+  row.className =
+    "message-row " + type;
 
-    chat.scrollTop =
-        chat.scrollHeight;
+  const bubble =
+    document.createElement("div");
 
+  bubble.className =
+    "message " + type;
+
+  bubble.innerHTML =
+    formatAnswer(text);
+
+  row.appendChild(bubble);
+
+  chat.appendChild(row);
+
+  scrollToBottom();
+
+  return bubble;
+}
+
+
+/* ---------------------------------------------------------
+   TYPING
+   --------------------------------------------------------- */
+
+function addTyping() {
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "message-row assistant";
+
+  row.id =
+    "typingRow";
+
+  const bubble =
+    document.createElement("div");
+
+  bubble.className =
+    "message assistant";
+
+  bubble.innerHTML = `
+    <div class="typing">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  `;
+
+  row.appendChild(bubble);
+
+  chat.appendChild(row);
+
+  scrollToBottom();
 }
 
 
 function removeTyping() {
 
-    const typing =
-        document.getElementById(
-            "typingRow"
-        );
+  const typing =
+    document.getElementById(
+      "typingRow"
+    );
 
-    if (typing) {
-        typing.remove();
-    }
+  if (typing) {
+    typing.remove();
+  }
 
 }
 
 
-/* ASK POLICE AI */
+/* ---------------------------------------------------------
+   SCROLL
+   --------------------------------------------------------- */
 
-async function askPoliceAI() {
+function scrollToBottom() {
 
-    const question =
-        questionInput.value.trim();
+  setTimeout(() => {
 
-    if (!question) return;
+    chat.scrollTop =
+      chat.scrollHeight;
 
-    const selectedLaw =
-        lawSelect.value;
+  }, 30);
+
+}
 
 
-    if (welcome) {
-        welcome.style.display =
-            "none";
+/* ---------------------------------------------------------
+   SOURCE CARD
+   --------------------------------------------------------- */
+
+function extractSources(text) {
+
+  const sourceMatch =
+    text.match(
+      /📖\s*Source:\s*(.*)/i
+    );
+
+  const sectionMatch =
+    text.match(
+      /📑\s*Section:\s*(.*)/i
+    );
+
+  const pageMatch =
+    text.match(
+      /📄\s*Page:\s*(.*)/i
+    );
+
+  if (
+    !sourceMatch &&
+    !sectionMatch &&
+    !pageMatch
+  ) {
+    return null;
+  }
+
+  return {
+    source:
+      sourceMatch
+        ? sourceMatch[1].trim()
+        : "Police AI Knowledge Base",
+
+    section:
+      sectionMatch
+        ? sectionMatch[1].trim()
+        : "—",
+
+    page:
+      pageMatch
+        ? pageMatch[1].trim()
+        : "—"
+  };
+
+}
+
+
+function addSourceCard(
+  bubble,
+  text
+) {
+
+  const source =
+    extractSources(text);
+
+  if (!source) {
+    return;
+  }
+
+  const card =
+    document.createElement("div");
+
+  card.className =
+    "source-card";
+
+  card.innerHTML = `
+    <div class="source-title">
+      📚 Source Reference
+    </div>
+
+    <div class="source-item">
+      <span class="source-label">
+        Source:
+      </span>
+      <span>
+        ${escapeHtml(source.source)}
+      </span>
+    </div>
+
+    <div class="source-item">
+      <span class="source-label">
+        Section:
+      </span>
+      <span>
+        ${escapeHtml(source.section)}
+      </span>
+    </div>
+
+    <div class="source-item">
+      <span class="source-label">
+        Page:
+      </span>
+      <span>
+        ${escapeHtml(source.page)}
+      </span>
+    </div>
+  `;
+
+  bubble.appendChild(card);
+}
+
+
+/* ---------------------------------------------------------
+   MESSAGE ACTIONS
+   --------------------------------------------------------- */
+
+function addMessageActions(
+  bubble,
+  text
+) {
+
+  const actions =
+    document.createElement("div");
+
+  actions.className =
+    "message-actions";
+
+  const copyBtn =
+    document.createElement("button");
+
+  copyBtn.className =
+    "small-btn";
+
+  copyBtn.textContent =
+    "Copy";
+
+  copyBtn.type =
+    "button";
+
+  copyBtn.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await navigator.clipboard.writeText(
+          text
+        );
+
+        copyBtn.textContent =
+          "Copied ✓";
+
+        setTimeout(() => {
+
+          copyBtn.textContent =
+            "Copy";
+
+        }, 1200);
+
+      } catch {
+
+        copyBtn.textContent =
+          "Copy failed";
+
+      }
+
+    }
+  );
+
+
+  const readBtn =
+    document.createElement("button");
+
+  readBtn.className =
+    "small-btn";
+
+  readBtn.textContent =
+    "🔊 Read";
+
+  readBtn.type =
+    "button";
+
+  readBtn.addEventListener(
+    "click",
+    () => {
+
+      if (
+        !("speechSynthesis" in window)
+      ) {
+        return;
+      }
+
+      speechSynthesis.cancel();
+
+      const cleanText =
+        text
+          .replace(/📖.*$/g, "")
+          .replace(/📑.*$/g, "")
+          .replace(/📄.*$/g, "")
+          .replace(/\*\*/g, "");
+
+      const utterance =
+        new SpeechSynthesisUtterance(
+          cleanText
+        );
+
+      utterance.lang =
+        "en-IN";
+
+      utterance.rate =
+        0.95;
+
+      utterance.pitch =
+        1;
+
+      speechSynthesis.speak(
+        utterance
+      );
+
+    }
+  );
+
+
+  const stopBtn =
+    document.createElement("button");
+
+  stopBtn.className =
+    "small-btn";
+
+  stopBtn.textContent =
+    "⏹ Stop";
+
+  stopBtn.type =
+    "button";
+
+  stopBtn.addEventListener(
+    "click",
+    () => {
+
+      if (
+        "speechSynthesis" in window
+      ) {
+        speechSynthesis.cancel();
+      }
+
+    }
+  );
+
+
+  actions.appendChild(copyBtn);
+  actions.appendChild(readBtn);
+  actions.appendChild(stopBtn);
+
+  bubble.appendChild(actions);
+}
+
+
+/* ---------------------------------------------------------
+   ASK POLICE AI
+   --------------------------------------------------------- */
+
+let isAsking =
+  false;
+
+
+async function askPoliceAI(
+  suppliedQuestion = null
+) {
+
+  if (isAsking) {
+    return;
+  }
+
+  const text =
+    suppliedQuestion !== null
+      ? suppliedQuestion.trim()
+      : question.value.trim();
+
+  if (!text) {
+    return;
+  }
+
+
+  /* USER MESSAGE */
+
+  addMessage(
+    text,
+    "user"
+  );
+
+  question.value = "";
+
+  resizeTextarea();
+
+
+  /* TYPING */
+
+  isAsking = true;
+
+  sendBtn.disabled = true;
+  micBtn.disabled = true;
+
+  addTyping();
+
+
+  try {
+
+    /*
+      IMPORTANT:
+      Keep this request format unchanged.
+
+      Your working Supabase Edge Function
+      expects "question" and "law".
+    */
+
+    const result =
+      await supabaseClient
+        .functions
+        .invoke(
+          CHAT_FUNCTION_NAME,
+          {
+            body: {
+              question: text,
+              law: selectedLaw
+            }
+          }
+        );
+
+
+    removeTyping();
+
+
+    if (result.error) {
+
+      console.error(
+        "Supabase error:",
+        result.error
+      );
+
+      const errorBubble =
+        addMessage(
+          "Connection error. Please check your internet connection and try again.",
+          "assistant"
+        );
+
+      return;
     }
 
 
-    addMessage(
-        question,
-        "user"
+    const data =
+      result.data || {};
+
+
+    const answer =
+      data.reply ||
+      data.answer ||
+      data.message ||
+      "I couldn't find an answer.";
+
+
+    const bubble =
+      addMessage(
+        answer,
+        "assistant"
+      );
+
+
+    addSourceCard(
+      bubble,
+      answer
     );
 
 
-    questionInput.value = "";
-    questionInput.style.height =
-        "38px";
+    addMessageActions(
+      bubble,
+      answer
+    );
 
 
-    showTyping();
+    scrollToBottom();
 
 
-    sendBtn.disabled = true;
+  } catch (error) {
 
+    console.error(
+      "Police AI error:",
+      error
+    );
 
-    try {
+    removeTyping();
 
-        const { data, error } =
-            await supabaseClient.functions.invoke(
-                "Chat",
-                {
-                    body: {
-                        question: question,
-                        law: selectedLaw
-                    }
-                }
-            );
+    addMessage(
+      "Connection error. Please check your internet connection and try again.",
+      "assistant"
+    );
 
+  } finally {
 
-        removeTyping();
+    isAsking = false;
 
+    sendBtn.disabled = false;
+    micBtn.disabled = false;
 
-        if (error) {
+    question.focus();
 
-            throw error;
-
-        }
-
-
-        let answer =
-            data?.reply ||
-            data?.answer;
-
-
-        if (!answer) {
-
-            answer =
-                "I did not receive a response from Police AI.";
-
-        }
-
-
-        const box =
-            addMessage(
-                answer,
-                "ai",
-                true
-            );
-
-
-        addSourceCard(
-            box,
-            answer
-        );
-
-
-    } catch (error) {
-
-        removeTyping();
-
-        console.error(
-            "Police AI error:",
-            error
-        );
-
-
-        addMessage(
-            "Connection error. Please check your internet connection and try again.",
-            "ai"
-        );
-
-    } finally {
-
-        sendBtn.disabled =
-            false;
-
-        questionInput.focus();
-
-    }
+  }
 
 }
 
 
-/* SEND */
+/* ---------------------------------------------------------
+   SEND BUTTON
+   --------------------------------------------------------- */
 
 sendBtn.addEventListener(
-    "click",
-    askPoliceAI
+  "click",
+  () => {
+    askPoliceAI();
+  }
 );
 
 
-questionInput.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key === "Enter" &&
-            !event.shiftKey
-        ) {
-
-            event.preventDefault();
-
-            askPoliceAI();
-
-        }
-
-    }
-);
-
-
-/* SUGGESTIONS */
+/* ---------------------------------------------------------
+   QUICK SUGGESTIONS
+   --------------------------------------------------------- */
 
 document
-    .querySelectorAll(".suggestion")
-    .forEach(button => {
+  .querySelectorAll(".suggestion")
+  .forEach(
+    button => {
 
-        button.addEventListener(
+      button.addEventListener(
+        "click",
+        () => {
+
+          const q =
+            button.dataset.question;
+
+          askPoliceAI(q);
+
+        }
+      );
+
+    }
+  );
+
+
+/* ---------------------------------------------------------
+   NEW CHAT
+   --------------------------------------------------------- */
+
+newChatBtn.addEventListener(
+  "click",
+  () => {
+
+    chat.innerHTML = `
+      <div
+        id="welcomeMessage"
+        class="chat-welcome"
+      >
+
+        <svg
+          class="chat-welcome-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M50 6
+               L88 20
+               L82 57
+               C78 77 65 90 50 95
+               C35 90 22 77 18 57
+               L12 20 Z"
+            fill="#2563EB"
+            stroke="#F5C542"
+            stroke-width="4"
+          />
+
+          <circle
+            cx="50"
+            cy="48"
+            r="15"
+            fill="#ffffff"
+          />
+
+          <path
+            d="M50 37 L50 59
+               M39 48 L61 48"
+            stroke="#2563EB"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+
+          <path
+            d="M40 69 L50 60 L60 69"
+            stroke="#22D3EE"
+            stroke-width="4"
+            fill="none"
+          />
+        </svg>
+
+        <h1>
+          How can I help you?
+        </h1>
+
+        <p>
+          Ask a question about Indian criminal law.
+        </p>
+
+        <div class="suggestions">
+
+          <button
+            class="suggestion"
+            type="button"
+            data-question="What is culpable homicide?"
+          >
+            What is culpable homicide?
+          </button>
+
+          <button
+            class="suggestion"
+            type="button"
+            data-question="What is theft?"
+          >
+            What is theft?
+          </button>
+
+          <button
+            class="suggestion"
+            type="button"
+            data-question="What is criminal intimidation?"
+          >
+            Criminal intimidation
+          </button>
+
+          <button
+            class="suggestion"
+            type="button"
+            data-question="What is the punishment for murder?"
+          >
+            Punishment for murder
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+
+    chat
+      .querySelectorAll(".suggestion")
+      .forEach(
+        button => {
+
+          button.addEventListener(
             "click",
             () => {
 
-                questionInput.value =
-                    button.textContent.trim();
-
-                questionInput.dispatchEvent(
-                    new Event("input")
-                );
-
-                questionInput.focus();
+              askPoliceAI(
+                button.dataset.question
+              );
 
             }
-        );
+          );
 
-    });
+        }
+      );
 
 
-/* NEW CHAT */
+    question.value = "";
 
-newChatBtn.addEventListener(
-    "click",
-    () => {
+    resizeTextarea();
 
-        chat.innerHTML = "";
+    scrollToBottom();
 
-        chat.appendChild(
-            welcome
-        );
-
-        welcome.style.display =
-            "";
-
-        questionInput.value =
-            "";
-
-        questionInput.style.height =
-            "38px";
-
-        questionInput.focus();
-
-    }
+  }
 );
 
 
-/* SPEECH */
+/* =========================================================
+   VOICE INPUT
+   ========================================================= */
 
-function setupSpeechRecognition() {
+let recognition = null;
 
-    const SpeechRecognition =
-        window.SpeechRecognition ||
-        window.webkitSpeechRecognition;
+let recognizing =
+  false;
 
-
-    if (!SpeechRecognition) {
-
-        micBtn.title =
-            "Voice input is not supported in this WebView.";
-
-        return;
-
-    }
+let finalTranscript =
+  "";
 
 
-    recognition =
-        new SpeechRecognition();
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
 
-    recognition.lang =
-        "en-IN";
 
-    recognition.continuous =
-        false;
+if (SpeechRecognition) {
 
-    recognition.interimResults =
+  recognition =
+    new SpeechRecognition();
+
+  recognition.lang =
+    "en-IN";
+
+  recognition.continuous =
+    false;
+
+  recognition.interimResults =
+    true;
+
+  recognition.maxAlternatives =
+    1;
+
+
+  recognition.onstart =
+    () => {
+
+      recognizing =
         true;
 
-    recognition.maxAlternatives =
-        1;
+      micBtn.classList.add(
+        "recording"
+      );
+
+      voiceOverlay.classList.add(
+        "active"
+      );
+
+      voiceStatus.textContent =
+        "I'm listening";
+
+    };
 
 
-    recognition.onstart =
-        () => {
-
-            isListening = true;
-
-            voiceOverlay.classList.add(
-                "show"
-            );
-
-            voiceStatus.textContent =
-                "I'm listening";
-
-        };
-
-
-    recognition.onaudiostart =
-        () => {
-
-            voiceStatus.textContent =
-                "Hearing you…";
-
-        };
-
-
-    recognition.onspeechstart =
-        () => {
-
-            voiceStatus.textContent =
-                "Listening to your question…";
-
-        };
-
-
-    recognition.onresult =
-        event => {
-
-            let transcript = "";
-
-            for (
-                let i = event.resultIndex;
-                i < event.results.length;
-                i++
-            ) {
-
-                transcript +=
-                    event.results[i][0].transcript;
-
-            }
-
-            questionInput.value =
-                transcript.trim();
-
-            questionInput.dispatchEvent(
-                new Event("input")
-            );
-
-            voiceStatus.textContent =
-                "Processing…";
-
-        };
-
-
-    recognition.onerror =
-        event => {
-
-            console.error(
-                "Speech error:",
-                event.error
-            );
-
-            voiceStatus.textContent =
-                "Voice input stopped";
-
-        };
-
-
-    recognition.onend =
-        () => {
-
-            isListening = false;
-
-            voiceOverlay.classList.remove(
-                "show"
-            );
-
-
-            const text =
-                questionInput.value.trim();
-
-            if (text) {
-
-                setTimeout(
-                    askPoliceAI,
-                    100
-                );
-
-            }
-
-        };
-
-}
-
-
-setupSpeechRecognition();
-
-
-/* START VOICE */
-
-micBtn.addEventListener(
-    "click",
+  recognition.onaudiostart =
     () => {
 
-        if (!recognition) {
+      voiceStatus.textContent =
+        "Hearing you…";
 
-            alert(
-                "Voice input is not available in this Android WebView yet."
-            );
-
-            return;
-
-        }
+    };
 
 
-        if (isListening) {
-
-            recognition.stop();
-
-            return;
-
-        }
-
-
-        try {
-
-            recognition.start();
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-
-    }
-);
-
-
-/* STOP VOICE */
-
-stopVoiceBtn.addEventListener(
-    "click",
+  recognition.onspeechstart =
     () => {
 
-        if (recognition &&
-            isListening) {
+      voiceStatus.textContent =
+        "Listening to your question…";
 
-            recognition.stop();
-
-        }
-
-        voiceOverlay.classList.remove(
-            "show"
-        );
-
-    }
-);
+    };
 
 
-/* SPEECH OUTPUT */
+  recognition.onresult =
+    (event) => {
 
-function stopSpeech() {
+      let interim =
+        "";
 
-    if (
-        "speechSynthesis" in window
-    ) {
+      finalTranscript =
+        "";
 
-        speechSynthesis.cancel();
+      for (
+        let i = event.resultIndex;
+        i < event.results.length;
+        i++
+      ) {
 
-    }
-
-}
-
-
-/* CLEANUP */
-
-window.addEventListener(
-    "beforeunload",
-    () => {
-
-        stopSpeech();
+        const transcript =
+          event.results[i][0]
+            .transcript;
 
         if (
-            recognition &&
-            isListening
+          event.results[i].isFinal
         ) {
 
-            recognition.stop();
+          finalTranscript +=
+            transcript;
+
+        } else {
+
+          interim +=
+            transcript;
 
         }
 
+      }
+
+
+      const combined =
+        (
+          finalTranscript ||
+          interim
+        ).trim();
+
+
+      question.value =
+        combined;
+
+      resizeTextarea();
+
+      voiceStatus.textContent =
+        combined
+          ? combined
+          : "I'm listening…";
+
+    };
+
+
+  recognition.onspeechend =
+    () => {
+
+      voiceStatus.textContent =
+        "Processing…";
+
+    };
+
+
+  recognition.onerror =
+    (event) => {
+
+      console.error(
+        "Speech recognition error:",
+        event.error
+      );
+
+      voiceStatus.textContent =
+        "Voice input stopped";
+
+      setTimeout(
+        closeVoiceOverlay,
+        500
+      );
+
+    };
+
+
+  recognition.onend =
+    () => {
+
+      recognizing =
+        false;
+
+      micBtn.classList.remove(
+        "recording"
+      );
+
+
+      const spoken =
+        (
+          finalTranscript ||
+          question.value
+        ).trim();
+
+
+      setTimeout(
+        closeVoiceOverlay,
+        450
+      );
+
+
+      if (
+        spoken &&
+        !isAsking
+      ) {
+
+        question.value =
+          "";
+
+        resizeTextarea();
+
+        askPoliceAI(
+          spoken
+        );
+
+      }
+
+    };
+
+} else {
+
+  console.warn(
+    "SpeechRecognition is not supported."
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   START VOICE
+   --------------------------------------------------------- */
+
+function startVoice() {
+
+  if (!recognition) {
+
+    alert(
+      "Voice input is not supported on this device."
+    );
+
+    return;
+
+  }
+
+  if (recognizing) {
+    return;
+  }
+
+
+  finalTranscript =
+    "";
+
+  question.value =
+    "";
+
+  voiceStatus.textContent =
+    "Starting microphone…";
+
+
+  try {
+
+    recognition.start();
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+  }
+
+}
+
+
+micBtn.addEventListener(
+  "click",
+  startVoice
+);
+
+
+/* ---------------------------------------------------------
+   STOP VOICE
+   --------------------------------------------------------- */
+
+function closeVoiceOverlay() {
+
+  voiceOverlay.classList.remove(
+    "active"
+  );
+
+  micBtn.classList.remove(
+    "recording"
+  );
+
+}
+
+
+function stopVoice() {
+
+  if (
+    recognition &&
+    recognizing
+  ) {
+
+    try {
+      recognition.stop();
+    } catch (error) {
+      console.error(error);
     }
+
+  }
+
+  closeVoiceOverlay();
+
+}
+
+
+stopVoiceBtn.addEventListener(
+  "click",
+  stopVoice
+);
+
+
+/* ---------------------------------------------------------
+   INITIAL STATE
+   --------------------------------------------------------- */
+
+resizeTextarea();
+
+console.log(
+  "Police AI Stage 2 loaded successfully."
 );
 
 </script>
 
 </body>
-</html>
+      </html>
