@@ -8,12 +8,16 @@ import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.view.ViewGroup;
+
+import androidx.webkit.WebViewAssetLoader;
+import androidx.webkit.WebViewClientCompat;
 
 public class MainActivity extends Activity {
 
     private WebView webView;
+    private PermissionRequest pendingPermissionRequest;
+
     private static final int AUDIO_PERMISSION_REQUEST = 1001;
 
     @Override
@@ -22,77 +26,127 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
 
-        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
+        webView.setLayoutParams(
+                new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
         );
 
-        webView.setLayoutParams(params);
         setContentView(webView);
 
         WebSettings settings = webView.getSettings();
 
-        // Police AI interface uses JavaScript
+        // JavaScript is required by Police AI
         settings.setJavaScriptEnabled(true);
 
-        // Needed for the web app
+        // Web app storage
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
 
-        // Better mobile experience
+        // Mobile display
         settings.setLoadWithOverviewMode(false);
         settings.setUseWideViewPort(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
 
-        // Allow audio/video playback
+        // Voice/audio
         settings.setMediaPlaybackRequiresUserGesture(false);
 
-        webView.setWebViewClient(new WebViewClient());
+        /*
+         * Securely load index.html from:
+         *
+         * app/src/main/assets/index.html
+         *
+         * using an HTTPS-style local origin.
+         */
+        final WebViewAssetLoader assetLoader =
+                new WebViewAssetLoader.Builder()
+                        .addPathHandler(
+                                "/assets/",
+                                new WebViewAssetLoader
+                                        .AssetsPathHandler(this)
+                        )
+                        .build();
 
-        webView.setWebChromeClient(new WebChromeClient() {
+        webView.setWebViewClient(
+                new WebViewClientCompat() {
 
-            @Override
-            public void onPermissionRequest(final PermissionRequest request) {
-
-                runOnUiThread(() -> {
-
-                    String[] resources = request.getResources();
-
-                    for (String resource : resources) {
-
-                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE
-                                .equals(resource)) {
-
-                            if (checkSelfPermission(
-                                    Manifest.permission.RECORD_AUDIO
-                            ) == PackageManager.PERMISSION_GRANTED) {
-
-                                request.grant(
-                                        new String[]{
-                                                PermissionRequest
-                                                        .RESOURCE_AUDIO_CAPTURE
-                                        }
-                                );
-
-                            } else {
-
-                                requestAudioPermission();
-                            }
-
-                            return;
-                        }
+                    @Override
+                    public android.webkit.WebResourceResponse
+                    shouldInterceptRequest(
+                            WebView view,
+                            android.webkit.WebResourceRequest request
+                    ) {
+                        return assetLoader.shouldInterceptRequest(
+                                request.getUrl()
+                        );
                     }
-                });
-            }
-        });
 
-        // Request microphone permission for Police AI voice input
+                    @Override
+                    public android.webkit.WebResourceResponse
+                    shouldInterceptRequest(
+                            WebView view,
+                            String url
+                    ) {
+                        return assetLoader.shouldInterceptRequest(
+                                android.net.Uri.parse(url)
+                        );
+                    }
+                }
+        );
+
+        webView.setWebChromeClient(
+                new WebChromeClient() {
+
+                    @Override
+                    public void onPermissionRequest(
+                            final PermissionRequest request
+                    ) {
+
+                        runOnUiThread(() -> {
+
+                            for (String resource :
+                                    request.getResources()) {
+
+                                if (PermissionRequest
+                                        .RESOURCE_AUDIO_CAPTURE
+                                        .equals(resource)) {
+
+                                    if (checkSelfPermission(
+                                            Manifest.permission
+                                                    .RECORD_AUDIO
+                                    ) == PackageManager
+                                            .PERMISSION_GRANTED) {
+
+                                        request.grant(
+                                                new String[]{
+                                                        PermissionRequest
+                                                                .RESOURCE_AUDIO_CAPTURE
+                                                }
+                                        );
+
+                                    } else {
+
+                                        pendingPermissionRequest =
+                                                request;
+
+                                        requestAudioPermission();
+                                    }
+
+                                    return;
+                                }
+                            }
+                        });
+                    }
+                }
+        );
+
         requestAudioPermission();
 
-        // Load the Police AI web interface
+        // Load bundled Police AI interface
         webView.loadUrl(
-                "file:///android_asset/index.html"
+                "https://appassets.androidplatform.net/assets/index.html"
         );
     }
 
@@ -115,9 +169,47 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String[] permissions,
+            int[] grantResults
+    ) {
+
+        super.onRequestPermissionsResult(
+                requestCode,
+                permissions,
+                grantResults
+        );
+
+        if (requestCode == AUDIO_PERMISSION_REQUEST) {
+
+            if (grantResults.length > 0 &&
+                    grantResults[0] ==
+                            PackageManager.PERMISSION_GRANTED) {
+
+                if (pendingPermissionRequest != null) {
+
+                    pendingPermissionRequest.grant(
+                            new String[]{
+                                    PermissionRequest
+                                            .RESOURCE_AUDIO_CAPTURE
+                            }
+                    );
+
+                    pendingPermissionRequest = null;
+                }
+            } else {
+
+                pendingPermissionRequest = null;
+            }
+        }
+    }
+
+    @Override
     public void onBackPressed() {
 
-        if (webView != null && webView.canGoBack()) {
+        if (webView != null &&
+                webView.canGoBack()) {
 
             webView.goBack();
 
