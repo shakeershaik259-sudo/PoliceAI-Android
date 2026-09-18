@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Internet access for Supabase / Police AI -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Microphone access for voice input -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
+        android:icon="@drawable/police_ai_icon"
+        android:roundIcon="@drawable/police_ai_icon"
         android:label="Police AI"
         android:theme="@style/Theme.PoliceAI"
         android:usesCleartextTraffic="false">
@@ -15,8 +21,11 @@
             android:exported="true">
 
             <intent-filter>
+
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
 
         </activity>
